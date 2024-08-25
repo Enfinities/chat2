@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Chat Room</h2>
+        <div class="chat-log" id="chat-log">
+            {% for message in messages %}
+            <div class="chat-message">
+                <img src="{{ url_for('static', filename='profile_pics/' + message['image_file']) }}" alt="Profile Picture" class="chat-pic">
+                <strong>{{ message['user'] }}</strong>: {{ message['message'] }}
+            </div>
+            {% endfor %}
+        </div>
+        <form method="POST" action="{{ url_for('chat', code=code) }}">
+            <div class="form-group">
+                <input type="text" name="message" id="message" placeholder="Type your message..." required>
+                <button type="submit">Send</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        // Auto-scroll chat log to bottom
+        var chatLog = document.getElementById("chat-log");
+        chatLog.scrollTop = chatLog.scrollHeight;
+    </script>
+</body>
+</html>
