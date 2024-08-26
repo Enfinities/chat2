@@ -9,52 +9,56 @@
 </head>
 <body>
     <div class="container">
-        <h2>Chat Room</h2>
-        <div id="chat-log">
-            <!-- Messages will be loaded here -->
-            {% for message in messages %}
-                <p><strong>{{ message.author.username }}:</strong> {{ message.content }}</p>
-            {% endfor %}
+        <div class="header">
+            <h2>Chatroom</h2>
+            <div class="user-options">
+                <a href="{{ url_for('profile') }}" class="btn">Profile</a>
+                <a href="{{ url_for('logout') }}" class="btn">Log Out</a>
+            </div>
+        </div>
+        <div id="chat-window">
+            <ul id="chat-log">
+                {% for message in messages %}
+                <li><strong>{{ message.author.username }}:</strong> {{ message.content }}</li>
+                {% endfor %}
+            </ul>
         </div>
         <form id="chat-form" method="POST" action="{{ url_for('chat') }}">
-            <textarea name="message" placeholder="Type your message here..." required></textarea>
+            <input type="text" name="message" id="message" placeholder="Type your message here...">
             <button type="submit">Send</button>
         </form>
-        <div class="profile-pics">
-            <!-- Display the logged-in users with their profile pictures -->
-            {% for user in online_users %}
-                <img src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}" alt="{{ user.username }}'s Profile Picture" class="profile-pic">
-            {% endfor %}
+        <div class="user-list">
+            <h3>Active Users</h3>
+            <ul>
+                {% for user in active_users %}
+                <li>
+                    <img src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}" alt="{{ user.username }}'s profile picture" class="user-pic">
+                    {{ user.username }}
+                </li>
+                {% endfor %}
+            </ul>
         </div>
-        <a href="{{ url_for('profile') }}">Go to Profile</a>
-        <a href="{{ url_for('logout') }}">Log Out</a>
     </div>
 
     <script>
-        function loadMessages() {
-            $.ajax({
-                url: "{{ url_for('messages') }}",
-                method: "GET",
-                success: function(data) {
-                    $('#chat-log').html(data);
-                }
-            });
-        }
+        $(document).ready(function() {
+            // Function to update chat log
+            function updateChat() {
+                $.get("{{ url_for('get_messages') }}", function(data) {
+                    $("#chat-log").html(data);
+                });
+            }
 
-        // Load messages every second
-        setInterval(loadMessages, 1000);
+            // Update chat every second
+            setInterval(updateChat, 1000);
 
-        // Optionally, prevent form resubmission
-        $('#chat-form').on('submit', function(event) {
-            event.preventDefault();
-            $.ajax({
-                url: "{{ url_for('chat') }}",
-                method: "POST",
-                data: $(this).serialize(),
-                success: function() {
-                    loadMessages();
-                    $('#chat-form')[0].reset();
-                }
+            // Handle form submission
+            $("#chat-form").submit(function(event) {
+                event.preventDefault();
+                $.post($(this).attr("action"), $(this).serialize(), function() {
+                    $("#message").val('');  // Clear the input field
+                    updateChat();  // Update chat immediately after sending a message
+                });
             });
         });
     </script>
