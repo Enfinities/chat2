@@ -93,6 +93,12 @@ def messages():
     messages = Message.query.order_by(Message.timestamp.desc()).all()
     return render_template('messages.html', messages=messages)
 
+@app.route('/get_messages')
+def get_messages():
+    # Logic to retrieve and render messages goes here
+    messages = Message.query.order_by(Message.timestamp.asc()).all()
+    return render_template('messages.html', messages=messages)
+
 
 @app.route('/logout')
 def logout():
