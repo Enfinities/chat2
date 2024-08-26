@@ -3,31 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Room</title>
+    <title>Chatroom</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="container">
-        <h2>Chat Room</h2>
-        <div class="chat-log" id="chat-log">
+        <!-- Navigation bar -->
+        <div class="navbar">
+            <a href="{{ url_for('profile') }}">
+                <button class="nav-btn">Profile</button>
+            </a>
+            <a href="{{ url_for('logout') }}">
+                <button class="nav-btn">Log Out</button>
+            </a>
+        </div>
+
+        <h2>Chatroom</h2>
+        <div class="chat-box">
+            <!-- Messages will be displayed here -->
             {% for message in messages %}
-            <div class="chat-message">
-                <img src="{{ url_for('static', filename='profile_pics/' + message['image_file']) }}" alt="Profile Picture" class="chat-pic">
-                <strong>{{ message['user'] }}</strong>: {{ message['message'] }}
-            </div>
+                <div class="message">
+                    <strong>{{ message.author.username }}:</strong> {{ message.content }}
+                </div>
             {% endfor %}
         </div>
-        <form method="POST" action="{{ url_for('chat', code=code) }}">
+        <form method="POST" action="{{ url_for('chat') }}">
             <div class="form-group">
-                <input type="text" name="message" id="message" placeholder="Type your message..." required>
+                <input type="text" name="message" placeholder="Type your message here...">
                 <button type="submit">Send</button>
             </div>
         </form>
+
+        <!-- User profile images section -->
+        <div class="user-images">
+            <h3>Logged In Users:</h3>
+            <div class="user-images-container">
+                {% for user in users %}
+                    <div class="user-image">
+                        <img src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}" alt="{{ user.username }}" class="user-pic">
+                        <p>{{ user.username }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-    <script>
-        // Auto-scroll chat log to bottom
-        var chatLog = document.getElementById("chat-log");
-        chatLog.scrollTop = chatLog.scrollHeight;
-    </script>
 </body>
 </html>

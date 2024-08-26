@@ -9,7 +9,10 @@
 <body>
     <div class="container">
         <h2>Profile</h2>
+        <!-- Display the current profile picture -->
         <img src="{{ url_for('static', filename='profile_pics/' + image_file) }}" alt="Profile Picture" class="profile-pic">
+
+        <!-- Form to upload a new profile picture -->
         <form method="POST" enctype="multipart/form-data" action="{{ url_for('profile') }}">
             <div class="form-group">
                 <label for="image">Update Profile Picture</label>
@@ -17,6 +20,8 @@
             </div>
             <button type="submit">Upload</button>
         </form>
+
+        <!-- Navigation links -->
         <a href="{{ url_for('chat') }}">Go to Chat</a>
         <a href="{{ url_for('logout') }}">Log Out</a>
     </div>
