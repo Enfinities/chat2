@@ -3,49 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatroom</title>
+    <title>Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <!-- Navigation bar -->
-        <div class="navbar">
-            <a href="{{ url_for('profile') }}">
-                <button class="nav-btn">Profile</button>
-            </a>
-            <a href="{{ url_for('logout') }}">
-                <button class="nav-btn">Log Out</button>
-            </a>
-        </div>
-
-        <h2>Chatroom</h2>
-        <div class="chat-box">
-            <!-- Messages will be displayed here -->
+        <h2>Chat Room</h2>
+        <div id="chat-log">
+            <!-- Messages will be loaded here -->
             {% for message in messages %}
-                <div class="message">
-                    <strong>{{ message.author.username }}:</strong> {{ message.content }}
-                </div>
+                <p><strong>{{ message.author.username }}:</strong> {{ message.content }}</p>
             {% endfor %}
         </div>
-        <form method="POST" action="{{ url_for('chat') }}">
-            <div class="form-group">
-                <input type="text" name="message" placeholder="Type your message here...">
-                <button type="submit">Send</button>
-            </div>
+        <form id="chat-form" method="POST" action="{{ url_for('chat') }}">
+            <textarea name="message" placeholder="Type your message here..." required></textarea>
+            <button type="submit">Send</button>
         </form>
-
-        <!-- User profile images section -->
-        <div class="user-images">
-            <h3>Logged In Users:</h3>
-            <div class="user-images-container">
-                {% for user in users %}
-                    <div class="user-image">
-                        <img src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}" alt="{{ user.username }}" class="user-pic">
-                        <p>{{ user.username }}</p>
-                    </div>
-                {% endfor %}
-            </div>
+        <div class="profile-pics">
+            <!-- Display the logged-in users with their profile pictures -->
+            {% for user in online_users %}
+                <img src="{{ url_for('static', filename='profile_pics/' + user.image_file) }}" alt="{{ user.username }}'s Profile Picture" class="profile-pic">
+            {% endfor %}
         </div>
+        <a href="{{ url_for('profile') }}">Go to Profile</a>
+        <a href="{{ url_for('logout') }}">Log Out</a>
     </div>
+
+    <script>
+        function loadMessages() {
+            $.ajax({
+                url: "{{ url_for('messages') }}",
+                method: "GET",
+                success: function(data) {
+                    $('#chat-log').html(data);
+                }
+            });
+        }
+
+        // Load messages every second
+        setInterval(loadMessages, 1000);
+
+        // Optionally, prevent form resubmission
+        $('#chat-form').on('submit', function(event) {
+            event.preventDefault();
+            $.ajax({
+                url: "{{ url_for('chat') }}",
+                method: "POST",
+                data: $(this).serialize(),
+                success: function() {
+                    loadMessages();
+                    $('#chat-form')[0].reset();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
