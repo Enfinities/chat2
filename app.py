@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, flash, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
@@ -70,7 +70,6 @@ def profile():
                 flash('Your profile picture has been updated!', 'success')
     return render_template('profile.html', image_file=current_user.image_file)
 
-
 @app.route("/chat", methods=["GET", "POST"])
 @login_required
 def chat():
@@ -86,7 +85,6 @@ def chat():
     users = User.query.all()  # Get all users to display their profile images
     return render_template('chat.html', messages=messages, users=users)
 
-
 @app.route("/messages")
 @login_required
 def messages():
@@ -95,15 +93,53 @@ def messages():
 
 @app.route('/get_messages')
 def get_messages():
-    # Logic to retrieve and render messages goes here
     messages = Message.query.order_by(Message.timestamp.asc()).all()
     return render_template('messages.html', messages=messages)
-
 
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+# API routes
+@app.route('/api/')
+def home():
+    return "Welcome to the API! Available endpoints: /api/users and /api/messages", 200
+
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    try:
+        users = db.session.query(User).all()
+        users_data = [{"id": user.id, "username": user.username, "profile_image": user.image_file} for user in users]
+        return jsonify(users_data)
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return jsonify({"error": "Failed to fetch users"}), 500
+
+@app.route('/api/messages', methods=['GET'])
+def api_get_messages():
+    try:
+        messages = db.session.query(Message).all()
+        messages_data = [
+            {
+                "id": message.id,
+                "content": message.content,
+                "sender": message.author.username if message.author else "Unknown"
+            }
+            for message in messages
+        ]
+        return jsonify(messages_data)
+    except Exception as e:
+        print(f"Error fetching messages: {e}")
+        return jsonify({"error": "Failed to fetch messages"}), 500
+
+@app.route('/api/test_db', methods=['GET'])
+def test_db():
+    try:
+        db.session.execute('SELECT 1')
+        return jsonify({"status": "Database connection successful"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
